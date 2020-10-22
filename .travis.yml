@@ -1,0 +1,35 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t androidotai/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true androidotai/react-test npm test
+
+after_success:
+  - docker build -t androidotai/multi-client ./client
+  - docker build -t androidotai/multi-nginx ./nginx
+  - docker build -t androidotai/multi-server ./server
+  - docker build -t androidotai/multi-worker ./worker
+  # Log in ot the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take those images to push to docker hub
+  - docker push androidotai/multi-client
+  - docker push androidotai/multi-nginx
+  - docker push androidotai/multi-server
+  - docker push androidotai/multi-worker
+
+deploy:
+  provider: elasticbeanstalk
+  region: us-west-1
+  app: multi-docker
+  env: MultiDocker-env
+  bucket_name: elasticbeanstalk-us-west-1-306476627547
+  bucket_path: docker-multi
+  on:
+    branch: master
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key:
+    secure: $AWS_SECRET_KEY
