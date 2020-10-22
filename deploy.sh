@@ -2,6 +2,9 @@ docker build -t androidotai/multi-client:latest -t androidotai/multi-client:$SHA
 docker build -t androidotai/multi-server:latest -t androidotai/multi-server:$SHA -f ./server/Dockerfile ./server
 docker build -t androidotai/multi-worker:latest -t androidotai/multi-worker:$SHA -f ./worker/Dockerfile ./worker
 
+# Log in ot the docker CLI
+echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
 docker push androidotai/multi-client:latest
 docker push androidotai/multi-server:latest
 docker push androidotai/multi-worker:latest
